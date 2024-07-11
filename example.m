@@ -7,7 +7,7 @@ N = 4096; % Number of samples
 
 f = [50.1,75.3,100.4,125.2,150.3]; % Frequency of signal components (Hz)
 A = [220,0.05,0.1,25,7]; % Amplitude of signal components
-ph = [40,20,30,70,60]; % Phase of signal components (rad)
+ph = [40,20,30,70,60]; % Phase of signal components (deg)
 
 t=(0:N-1)/Fs;
 x = zeros(1,length(t));
@@ -32,3 +32,5 @@ plot(f_FFT,abs(y_FFT));
 hold on;
 plot(f_apFFT,abs(y_apFFT))
 hold off
+xlabel("Frequency [Hz]")
+ylabel("Amplitude")

@@ -60,12 +60,13 @@ if plot_graphs
     plot(f_FFT(1:end-1),angle(S_FFT(k)),'LineWidth',1)
     hold on
     plot(f_FFT(1:end-1),angle(S_apFFT(k)),'LineWidth',1)
-    legend("FFT","apFFT"); ylabel("Phase");
+    legend("FFT","apFFT"); ylabel("Phase [rad]");
     hold off;
     ax(3) = subplot(3,1,3);
     plot(f_correct,abs(A),'LineWidth',1)
     legend("Corrected apFFT"); ylabel("Amplitude");
     linkaxes(ax,'x')
+    xlabel("Frequency [Hz]")
 end
 
 end

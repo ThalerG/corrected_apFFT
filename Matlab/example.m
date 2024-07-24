@@ -4,7 +4,7 @@ clear; close all;
 
 Fs = 1024; % Sampling freq
 
-L = 2047; % Length of signal = 2*N-1
+L = 4095; % Length of signal = 2*N-1
 
 N = (L+1)/2;
 
@@ -33,9 +33,9 @@ x = x + noise;
 [f_apFFT,y_apFFT] = Nuttall_2win_apFFT(x(1:end-1),Fs);
 
 % Traditional FFT
-f_FFT = Fs/N*(0:(N/2));
-y_FFT = fft(x)/N;
-y_FFT = y_FFT(1:floor(N/2)+1);
+f_FFT = Fs/L*(0:(L/2));
+y_FFT = fft(x)/L;
+y_FFT = y_FFT(1:floor(L/2)+1);
 y_FFT(2:end-1) = 2*y_FFT(2:end-1);
 
 % Plot comparison

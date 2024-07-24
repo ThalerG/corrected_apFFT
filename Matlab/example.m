@@ -16,7 +16,7 @@ ph = deg2rad([40,20,30,70,60]); % Phase of signal components (rad)
 % A = [4,2]; % Amplitude of signal components
 % ph = [0,-pi/4]; % Phase of signal components (rad)
 
-t=(-N+1:N)/Fs;
+t=(-N:N)/Fs;
 x = zeros(1,length(t));
 
 for k = 1:length(f)
@@ -30,12 +30,12 @@ x = x + noise;
 %% Corrected double-window apFFT:
 
 % Corrected apFFT
-[f_apFFT,y_apFFT] = Nuttall_2win_apFFT(x(1:end-1),Fs);
+[f_apFFT,y_apFFT] = Nuttall_2win_apFFT(x,Fs,0.01);
 
 % Traditional FFT
 f_FFT = Fs/L*(0:(L/2));
 y_FFT = fft(x)/L;
-y_FFT = y_FFT(1:floor(L/2)+1);
+y_FFT = y_FFT(1:(L/2+1));
 y_FFT(2:end-1) = 2*y_FFT(2:end-1);
 
 % Plot comparison
@@ -43,7 +43,7 @@ figure;
 ax(1) = subplot(2,1,1);
 plot(f_FFT,abs(y_FFT));
 hold on;
-plot(f_apFFT,abs(y_apFFT))
+scatter(f_apFFT,abs(y_apFFT))
 hold off
 grid on;
 xlabel("Frequency [Hz]")
@@ -52,7 +52,7 @@ legend(["FFT","Corrected apFFT"],"Location","best")
 ax(2) = subplot(2,1,2);
 plot(f_FFT,rad2deg(angle(y_FFT)));
 hold on;
-plot(f_apFFT,rad2deg(angle(y_apFFT)))
+scatter(f_apFFT,rad2deg(angle(y_apFFT)))
 hold off
 grid on;
 xlabel("Frequency [Hz]")

@@ -44,7 +44,7 @@ x_win = signal(end-N+1:end).*N_win;
 S_FFT = fft(x_win);
 
 % Double-windowing of last 2N-1 samples for apFFT
-x_conv = ((signal-mean(signal)).*N_win_conv);
+x_conv = signal.*N_win_conv;
 S = [x_conv(N), x_conv(1:N-1) + x_conv(N+1:end)];
 
 S_apFFT = fft(S);

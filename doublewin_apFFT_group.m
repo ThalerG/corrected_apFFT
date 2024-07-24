@@ -1,4 +1,4 @@
-function [f_correct,y_correct] = Nuttall_2win_apFFT(signal, Fs)
+function [f_correct,y_correct] = doublewin_apFFT_group(signal, Fs)
 %apFFT Performs the Nuttall double-window all Phase FFT transformation on a 1D array.
 %   This function takes a 1D array 'signal' as input and returns its
 %   all-phase FFT transformation 'y'. The all-phase FFT aims to minimize
@@ -21,6 +21,11 @@ N_win = N_win/sum(N_win);
 NAll_win = nuttall(length(signal),'numTerms',4,'Order',3);
 NAll_win = NAll_win/sum(NAll_win);
 
+% Single windowing of last N samples for FFT
+x_win = signal(end-N+1:end).*N_win;
+S_FFT = fft(x_win);
+S_FFT(abs(S_FFT)<tol) = 0;
+
 X_group = NaN([N,N]);
 x_signal_win = signal.*NAll_win;
 
@@ -28,11 +33,6 @@ for j = 1:N
     X_group(:,j) = x_signal_win((N-j+1):(end-j+1));
     X_group(:,j) = circshift(X_group(:,j),-j+1);
 end
-
-% Single windowing of last N samples for FFT
-x_win = signal(end-N+1:end).*N_win;
-S_FFT = fft(x_win);
-S_FFT(abs(S_FFT)<tol) = 0;
 
 S = mean(X_group,2)';
 

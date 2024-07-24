@@ -1,8 +1,27 @@
-function [f_correct,y_correct] = Nuttall_2win_apFFT(signal, Fs)
-%apFFT Performs the Nuttall double-window all Phase FFT transformation on a 1D array.
+function [f_correct,y_correct] = Nuttall_2win_apFFT(signal, Fs, thr)
+% apFFT Performs the Nuttall double-window all Phase FFT transformation on a 1D array.
+% 
 %   This function takes a 1D array 'signal' as input and returns its
 %   all-phase FFT transformation 'y'. The all-phase FFT aims to minimize
 %   phase errors and align all components in phase.
+%
+%   Inputs:
+%       signal - The input 1D array.
+%       Fs - The sampling frequency of the signal.
+%       thr - The threshold amplitude value for correction. Only peaks with
+%             amplitudes greater than thr will be corrected. Default: 0.
+%
+%   Outputs:
+%       f_correct - The corrected frequencies of the peaks.
+%       y_correct - The corrected amplitudes and phases of the peaks.
+%
+%
+%   Example usage:
+%       [f_correct, y_correct] = Nuttall_2win_apFFT(signal, Fs, thr);
+
+if nargin < 3
+    thr = 0; % Default value for thr
+end
 
 if mod(length(signal),2)==0
     error('Signal cannot be of even length');
@@ -37,13 +56,18 @@ k = 1:floor(N/2); % Index for single-sided FFT/apFFT
 S_apFFT = [S_apFFT(1), 2*S_apFFT(k(2:end))];
 S_FFT = [S_FFT(1), 2*S_FFT(k(2:end))];
 
+% Get ApFFT peaks
+[pks,locs] = findpeaks(abs(S_apFFT));
+
+locs = locs(pks>thr);
+
 % Frequency and amplitude correction
-delta_ph = angle(S_FFT(k))-angle(S_apFFT(k));
-f_correct = (delta_ph*N/(pi*(N-1))+k-1)*Fs/N;
-A = abs(S_FFT(k)).^2./abs(S_apFFT(k));
+delta_ph = angle(S_FFT(locs))-angle(S_apFFT(locs));
+f_correct = (delta_ph*N/(pi*(N-1))+locs-1)*Fs/N;
+A = abs(S_FFT(locs)).^2./abs(S_apFFT(locs));
 
 % Complex representation
-ph = angle(S_apFFT(k));
+ph = angle(S_apFFT(locs));
 y_correct = A.*exp(1i.*ph);
 
 if plot_graphs
@@ -51,15 +75,15 @@ if plot_graphs
     
     figure;
     ax(1) = subplot(3,1,1);
-    plot(f_FFT(1:end-1),abs(S_FFT(k)),'LineWidth',1)
+    plot(f_FFT(locs),abs(S_FFT(locs)),'LineWidth',1)
     hold on
-    plot(f_FFT(1:end-1),abs(S_apFFT(k)),'LineWidth',1)
+    plot(f_FFT(locs),abs(S_apFFT(locs)),'LineWidth',1)
     legend("FFT","apFFT"); ylabel("Amplitude");
     hold off;
     ax(2) = subplot(3,1,2);
-    plot(f_FFT(1:end-1),angle(S_FFT(k)),'LineWidth',1)
+    plot(f_FFT(locs),angle(S_FFT(locs)),'LineWidth',1)
     hold on
-    plot(f_FFT(1:end-1),angle(S_apFFT(k)),'LineWidth',1)
+    plot(f_FFT(locs),angle(S_apFFT(locs)),'LineWidth',1)
     legend("FFT","apFFT"); ylabel("Phase [rad]");
     hold off;
     ax(3) = subplot(3,1,3);

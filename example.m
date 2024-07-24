@@ -24,7 +24,7 @@ end
 
 % Corrected apFFT
 [f_apFFT,y_apFFT] = Nuttall_2win_apFFT(x(1:end-1),Fs);
-% [f_apFFT2,y_apFFT2] = doublewin_apFFT_group(x(1:end-1),Fs);
+[f_apFFT2,y_apFFT2] = doublewin_apFFT_group(x(1:end-1),Fs);
 
 % Traditional FFT
 f_FFT = Fs/N*(0:(N/2));

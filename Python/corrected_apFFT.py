@@ -9,7 +9,7 @@ from typing import Tuple
 
 def corrected_2Win_apFFT(signal: np.ndarray, Fs: float, window: str = "boxcar", thr: float = 0) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Performs the corrected double-window all-phase FFT transformation on a 1D array.
+    Performs the corrected double-window all-phase FFT (apFFT) transformation on a 1D array.
 
     Parameters
     ----------
@@ -23,9 +23,9 @@ def corrected_2Win_apFFT(signal: np.ndarray, Fs: float, window: str = "boxcar", 
     - f_correct: 1D array of real numbers representing the corrected frequencies of the signal components.
     - y_correct: 1D array of complex numbers representing the corrected amplitudes and phases of the signal components.
 
-    This function applies the double-window all-phase FFT transformation to the input signal. The transformation aims to minimize phase errors and align frequency peaks. The function first applies a Nuttall window to the last N samples of the input signal, where N is determined based on the length of the signal. Then, it performs a single-windowed FFT on the windowed samples to obtain the single-sided FFT spectrum. Next, it convolves the window with itself to obtain the double-windowing function, and applies it to the entire input signal. The resulting signal is then transformed using the all-phase FFT. Finally, the function corrects the frequencies and amplitudes of the signal components based on the peaks in the all-phase FFT spectrum.
+    This function applies the double-window apFFT transformation to the input signal. The transformation aims to minimize phase errors and correct fence effect and spectral leakage distortion. The function first performs a single-windowed FFT on the samples to obtain the single-sided FFT spectrum. Next, it convolves the window with itself to obtain the double-windowing function, and applies it to the entire input signal. The resulting signal is then transformed using the all-phase FFT. Finally, the function corrects the frequencies and amplitudes of the signal components based on the phase difference between the FFT and apFFT spectra.
 
-    Note: The input signal should have an odd length to comply with the requirements of the double-windowed all-phase FFT transformation.
+    Note: The input signal should have an odd length to comply with the requirements of the double-window apFFT transformation.
     
     Reference
     ----------

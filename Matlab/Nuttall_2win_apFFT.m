@@ -24,10 +24,9 @@ if nargin < 3
 end
 
 if mod(length(signal),2)==0
-    error('Signal cannot be of even length');
+    warning('Signal cannot be of even length. Considering samples 1:(end-1)');
+    signal = signal(1:end-1);
 end
-
-plot_graphs = true;
 
 N = (length(signal)+1)/2;
 

@@ -1,5 +1,5 @@
 function [f_correct,y_correct] = corrected_2Win_apFFT(signal, Fs, varargin)
-% corrected_2Win_apFFT Performs the corrected double-window all Phase FFT transformation on a 1D array.
+% corrected_2Win_apFFT Performs the corrected double-window all-phase FFT (apFFT) transformation on a 1D array.
 % 
 %   This function takes a 1D array 'signal' as input and returns its
 %   all-phase FFT transformation 'y'. The all-phase FFT aims to minimize

@@ -70,27 +70,4 @@ A = abs(S_FFT(locs)).^2./abs(S_apFFT(locs));
 ph = angle(S_apFFT(locs));
 y_correct = A.*exp(1i.*ph);
 
-if plot_graphs
-    f_FFT = Fs/N*(0:(N/2));
-    
-    figure;
-    ax(1) = subplot(3,1,1);
-    plot(f_FFT(locs),abs(S_FFT(locs)),'LineWidth',1)
-    hold on
-    plot(f_FFT(locs),abs(S_apFFT(locs)),'LineWidth',1)
-    legend("FFT","apFFT"); ylabel("Amplitude");
-    hold off;
-    ax(2) = subplot(3,1,2);
-    plot(f_FFT(locs),angle(S_FFT(locs)),'LineWidth',1)
-    hold on
-    plot(f_FFT(locs),angle(S_apFFT(locs)),'LineWidth',1)
-    legend("FFT","apFFT"); ylabel("Phase [rad]");
-    hold off;
-    ax(3) = subplot(3,1,3);
-    plot(f_correct,abs(A),'LineWidth',1)
-    legend("Corrected apFFT"); ylabel("Amplitude");
-    linkaxes(ax,'x')
-    xlabel("Frequency [Hz]")
-end
-
 end

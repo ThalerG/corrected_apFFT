@@ -2,19 +2,36 @@ import numpy as np
 from windows import nuttall
 import matplotlib.pyplot as plt
 from scipy.fft import fft
+from scipy.signal import find_peaks
+import warnings
+from typing import Tuple, List
+import numpy as np
+from windows import nuttall
+from scipy.fft import fft
+from scipy.signal import find_peaks
+import warnings
 
-def Nuttall_2win_apFFT(signal, Fs):
+def Nuttall_2win_apFFT(signal: np.ndarray, Fs: float, thr: float = 0) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Performs the Nuttall double-window all Phase FFT transformation on a 1D array.
-    This function takes a 1D array 'signal' as input and returns its
-    all-phase FFT transformation 'y'. The all-phase FFT aims to minimize
-    phase errors and align all components in phase.
-    """
+    Performs the Nuttall double-window all-phase FFT transformation on a 1D array.
 
-    CONV = False # Convolution of windows (double windowing) or by groups
+    Parameters:
+    - signal: 1D array of real numbers representing the input signal.
+    - Fs: Sampling frequency of the input signal.
+    - thr: Threshold value used to filter out peaks with low amplitude. Default is 0.
+
+    Returns:
+    - f_correct: 1D array of real numbers representing the corrected frequencies of the signal components.
+    - y_correct: 1D array of complex numbers representing the corrected amplitudes and phases of the signal components.
+
+    This function applies the Nuttall double-window all-phase FFT transformation to the input signal. The transformation aims to minimize phase errors and align all components in phase. The function first applies a Nuttall window to the last N samples of the input signal, where N is determined based on the length of the signal. Then, it performs a single-windowed FFT on the windowed samples to obtain the single-sided FFT spectrum. Next, it convolves the Nuttall window with itself to obtain the double-windowing function, and applies it to the entire input signal. The resulting signal is then transformed using the all-phase FFT. Finally, the function corrects the frequencies and amplitudes of the signal components based on the peaks in the all-phase FFT spectrum.
+
+    Note: The input signal should have an odd length to comply with the requirements of the Nuttall double-windowed all-phase FFT transformation.
+    """
 
     if len(signal) % 2 == 0:
-        raise ValueError('Signal cannot be of even length')
+        warnings.warn('Signal for double-windowed apFFT cannot be of even length. Last sample removed.', UserWarning)
+        signal = signal[:-1]
 
     N = (len(signal) + 1) // 2
 
@@ -23,7 +40,9 @@ def Nuttall_2win_apFFT(signal, Fs):
     # N_win = np.ones((N))
     N_win /= np.sum(N_win)    
 
-    ################### BY CONVOLUTION ############################
+    # Single windowing of last N samples for FFT
+    x_win = signal[-N:] * N_win
+    S_FFT = fft(x_win)
 
     # Convolution of windows (double windowing)
     N_win_conv = np.convolve(N_win, N_win)
@@ -33,150 +52,61 @@ def Nuttall_2win_apFFT(signal, Fs):
     x_conv = signal * N_win_conv
     S = np.concatenate(([x_conv[N-1]], x_conv[:N-1] + x_conv[N:]))
 
-    S_apFFT_conv = fft(S)
+    S_apFFT = fft(S)
 
     # Amplitude of single-sided FFT/apFFT is doubled for non-zero frequencies
-    S_apFFT_conv = np.concatenate(([S_apFFT_conv[0]], 2 * S_apFFT_conv[1:N//2]))
-
-    ################### BY GROUPS ############################
-    
-    # Nuttall window for the whole signal
-    NAll_win = nuttall(len(signal), 4, 3)
-    NAll_win /= np.sum(NAll_win)
-
-    X_group = np.empty((N, N))
-    X_group[:] = np.NaN
-
-    # Step 1.1: First windowing
-    x_signal_win = signal*NAll_win
-
-    for j in range(N):
-        # Step 1.2: Grouping in N-length vectors
-        x_temp = x_signal_win[(N - j - 1):(len(signal) - j)]
-
-        # Step 2: Circular shifting
-        X_group[j, :] = np.roll(x_temp, -j)
-
-    # Step 3: Transpose matrix
-    X_group = X_group.T
-
-    # Step 4.1: Second windowing
-    X_group_w = X_group*N_win
-
-    # Step 4.2: Sum of the N-length vectors
-    S_gr = np.sum(X_group_w,axis = 1)
-
-    # Step 4.3: FFT
-    S_apFFT_gr = fft(S_gr)
-
-    # Amplitude of single-sided FFT/apFFT is doubled for non-zero frequencies
-    S_apFFT_gr = np.concatenate(([S_apFFT_gr[0]], 2 * S_apFFT_gr[1:N//2]))
-
-    diff = np.abs(S_gr - S)
-
-    time = np.arange(len(diff)) / Fs
-
-    plt.figure(figsize=(10, 6))
-
-    # Plot difference and elementwise division
-    plt.subplot(3, 1, 1)
-    plt.plot(time, diff)
-    plt.title('Difference')
-    plt.xlabel('Time (s)')
-    plt.ylabel('Difference between methods')
-
-    plt.subplot(3, 1, 2)
-    plt.plot(time, S_gr / S)
-    plt.xlabel('Time (s)')
-    plt.ylabel('Ratio between methods')
-
-    # Plot signals S_gr and S over time
-    ax1 = plt.subplot(3, 1, 3)
-    ax2 = ax1.twinx()
-    ax1.plot(time, S_gr, label='S_gr', color='blue')
-    ax2.plot(time, S, label='S', color='red')
-    ax1.set_xlabel('Time (s)')
-    ax1.set_ylabel('Amplitude (antes)', color='blue')
-    ax2.set_ylabel('Amplitude (depois)', color='red')
-    ax1.legend(loc='upper left')
-    ax2.legend(loc='upper right')
-
-    plt.show()
-
-    # Single windowing of last N samples for FFT
-    x_win = signal[-N:] * N_win
-    S_FFT = fft(x_win)
+    S_apFFT = np.concatenate(([S_apFFT[0]], 2 * S_apFFT[1:N//2]))
 
     # Amplitude of single-sided FFT/apFFT is doubled for non-zero frequencies
     S_FFT = np.concatenate(([S_FFT[0]], 2 * S_FFT[1:N//2]))
 
     k = np.arange(0, N//2)  # Index for single-sided FFT/apFFT
 
-    f = np.linspace(0, Fs/2, len(S_FFT))
+    # Correction algorithm only works for peaks
+    peaks, _ = find_peaks(abs(S_apFFT[k]))
 
-    if CONV:
-        S_apFFT = S_apFFT_conv
-    else:
-        S_apFFT = S_apFFT_gr
+    # Select only peaks with amplitude greater than the threshold
+    peaks = peaks[abs(S_apFFT[peaks]) > thr]
 
     # Frequency and amplitude correction
-    delta_ph = np.angle(S_FFT) - np.angle(S_apFFT)
-    f_correct = (delta_ph * N / (np.pi * (N - 1)) + k) * Fs / N
-    A = np.abs(S_FFT)**2 / np.abs(S_apFFT)
+    delta_ph = np.angle(S_FFT[peaks]) - np.angle(S_apFFT[peaks])
+    f_correct = (delta_ph * N / (np.pi * (N - 1)) + peaks) * Fs / N
+    A = np.abs(S_FFT[peaks])**2 / np.abs(S_apFFT[peaks])
 
     # Complex representation
-    ph = np.angle(S_apFFT)
+    ph = np.angle(S_apFFT[peaks])
     y_correct = A * np.exp(1j * ph)
-
-
-    plt.figure(figsize=(10, 6))
-
-    # Plot magnitude
-    plt.subplot(2, 1, 1)
-    plt.plot(f, np.abs(S_apFFT_conv), label='S_apFFT (antes)')
-    # plt.plot(f, np.abs(S_apFFT_gr), label='S_apFFT (depois)')
-    # plt.plot(f, np.abs(S_FFT), label='S_FFT')
-    plt.title('Nuttall 2win apFFT of the signal')
-    plt.xlabel('Frequency (Hz)')
-    plt.ylabel('Magnitude')
-    plt.legend()
-
-    # Plot phase
-    plt.subplot(2, 1, 2)
-    plt.plot(f, np.angle(S_apFFT_conv, deg = True), label='ApFFT (antes)')
-    # plt.plot(f, np.angle(S_apFFT_gr, deg = True), label='ApFFT (depois)')
-    # plt.plot(f, np.angle(S_FFT, deg = True), label='FFT')
-    plt.xlabel('Frequency (Hz)')
-    plt.ylabel('Phase (deg)')
-    plt.legend()
-
-    plt.show()
     
     return f_correct, y_correct
 
 if __name__=="__main__":
     # Generate a test signal
     Fs = 1024  # Sampling frequency
-    N = 2047  # Number of samples, odd to comply with Nuttall_2win_apFFT requirements
+
+    L = 4095 # Length of signal = 2*N-1
+
+    N = (L+1)/2
 
     f = np.array([50.1, 75.3, 100.4, 125.2, 150.3])  # Frequency of signal components (Hz)
     A = np.array([220, 0.05, 0.1, 25, 7])  # Amplitude of signal components
     ph = np.deg2rad([40, 20, 30, 70, 60])  # Phase of signal components (rad)
 
-    t = np.arange(N) / Fs
+    t = np.arange(-N, N+1) / Fs
     x = np.zeros(len(t))
 
     for k in range(len(f)):
         x += A[k] * np.cos(2 * np.pi * f[k] * t + ph[k])
 
     # Apply Nuttall_2win_apFFT
-    (f_apFFT, y_apFFT) = Nuttall_2win_apFFT(x, Fs)
+    (f_apFFT, y_apFFT) = Nuttall_2win_apFFT(x, Fs,0.01)
 
-    # Plotting the result
     plt.figure(figsize=(10, 6))
-    plt.plot(f_apFFT, np.abs(y_apFFT), label='Nuttall 2win apFFT')
-    plt.title('Nuttall 2win apFFT of the signal')
-    plt.xlabel('Frequency (Hz)')
+    ax1 = plt.subplot(2, 1, 1)
+    plt.plot(f_apFFT, np.abs(y_apFFT), 'o')
+    plt.title('Nuttall double-windowed apFFT of the signal')
     plt.ylabel('Magnitude')
-    plt.legend()
+    plt.subplot(2, 1, 2, sharex=ax1)
+    plt.plot(f_apFFT, np.angle(y_apFFT, deg=True), 'o')
+    plt.xlabel('Frequency [Hz]')
+    plt.ylabel('Phase [deg]')
     plt.show()

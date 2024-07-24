@@ -20,11 +20,14 @@ for k = 1:length(f)
     x = x + A(k)*cos(2*pi*f(k)*t+ph(k));
 end
 
+% Add Gaussian noise to signal x
+noise = 0.01*randn(size(x));
+x = x + noise;
+
 %% Corrected double-window apFFT:
 
 % Corrected apFFT
 [f_apFFT,y_apFFT] = Nuttall_2win_apFFT(x(1:end-1),Fs);
-[f_apFFT2,y_apFFT2] = doublewin_apFFT_group(x(1:end-1),Fs);
 
 % Traditional FFT
 f_FFT = Fs/N*(0:(N/2));
@@ -32,10 +35,23 @@ y_FFT = fft(x)/N;
 y_FFT = y_FFT(1:N/2+1);
 y_FFT(2:end-1) = 2*y_FFT(2:end-1);
 
+% Plot comparison
 figure;
+ax(1) = subplot(2,1,1);
 plot(f_FFT,abs(y_FFT));
 hold on;
 plot(f_apFFT,abs(y_apFFT))
 hold off
+grid on;
 xlabel("Frequency [Hz]")
 ylabel("Amplitude")
+legend(["FFT","Corrected apFFT"],"Location","best")
+ax(2) = subplot(2,1,2);
+plot(f_FFT,rad2deg(angle(y_FFT)));
+hold on;
+plot(f_apFFT,rad2deg(angle(y_apFFT)))
+hold off
+grid on;
+xlabel("Frequency [Hz]")
+ylabel("Phase [deg]")
+linkaxes(ax,'x')

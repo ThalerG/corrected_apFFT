@@ -30,7 +30,7 @@ x = x + noise;
 %% Corrected double-window apFFT:
 
 % Corrected apFFT
-[f_apFFT,y_apFFT] = Nuttall_2win_apFFT(x,Fs,0.01);
+[f_apFFT,y_apFFT] = corrected_2Win_apFFT(x,Fs,'window','nuttall4_3','thr',0.01);
 
 % Traditional FFT
 f_FFT = Fs/L*(0:(L/2));

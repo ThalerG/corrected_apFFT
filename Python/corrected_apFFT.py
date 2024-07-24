@@ -1,32 +1,35 @@
 import numpy as np
-from windows import nuttall
+from nuttall import nuttall
 import matplotlib.pyplot as plt
 from scipy.fft import fft
 from scipy.signal import find_peaks
+from scipy.signal.windows import get_window
 import warnings
-from typing import Tuple, List
-import numpy as np
-from windows import nuttall
-from scipy.fft import fft
-from scipy.signal import find_peaks
-import warnings
+from typing import Tuple
 
-def Nuttall_2win_apFFT(signal: np.ndarray, Fs: float, thr: float = 0) -> Tuple[np.ndarray, np.ndarray]:
+def corrected_2Win_apFFT(signal: np.ndarray, Fs: float, window: str = "boxcar", thr: float = 0) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Performs the Nuttall double-window all-phase FFT transformation on a 1D array.
+    Performs the corrected double-window all-phase FFT transformation on a 1D array.
 
-    Parameters:
+    Parameters
+    ----------
     - signal: 1D array of real numbers representing the input signal.
     - Fs: Sampling frequency of the input signal.
+    - window: The window function to be used for the transformation. Default is "boxcar" (rectangular window).
     - thr: Threshold value used to filter out peaks with low amplitude. Default is 0.
 
-    Returns:
+    Returns
+    -------
     - f_correct: 1D array of real numbers representing the corrected frequencies of the signal components.
     - y_correct: 1D array of complex numbers representing the corrected amplitudes and phases of the signal components.
 
-    This function applies the Nuttall double-window all-phase FFT transformation to the input signal. The transformation aims to minimize phase errors and align all components in phase. The function first applies a Nuttall window to the last N samples of the input signal, where N is determined based on the length of the signal. Then, it performs a single-windowed FFT on the windowed samples to obtain the single-sided FFT spectrum. Next, it convolves the Nuttall window with itself to obtain the double-windowing function, and applies it to the entire input signal. The resulting signal is then transformed using the all-phase FFT. Finally, the function corrects the frequencies and amplitudes of the signal components based on the peaks in the all-phase FFT spectrum.
+    This function applies the double-window all-phase FFT transformation to the input signal. The transformation aims to minimize phase errors and align frequency peaks. The function first applies a Nuttall window to the last N samples of the input signal, where N is determined based on the length of the signal. Then, it performs a single-windowed FFT on the windowed samples to obtain the single-sided FFT spectrum. Next, it convolves the window with itself to obtain the double-windowing function, and applies it to the entire input signal. The resulting signal is then transformed using the all-phase FFT. Finally, the function corrects the frequencies and amplitudes of the signal components based on the peaks in the all-phase FFT spectrum.
 
-    Note: The input signal should have an odd length to comply with the requirements of the Nuttall double-windowed all-phase FFT transformation.
+    Note: The input signal should have an odd length to comply with the requirements of the double-windowed all-phase FFT transformation.
+    
+    Reference
+    ----------
+    .. [1] T. Su, M. Yang, T. Jin, and R. C. C. Flesch., "Power harmonic and interharmonic detection method in renewble power based on Nuttall double-window all-phase FFT algorithm", IET Renewable Power Generation, 12(8), pp 953-961, 2018. https://doi.org/10.1049/iet-rpg.2017.0115
     """
 
     if len(signal) % 2 == 0:
@@ -35,21 +38,37 @@ def Nuttall_2win_apFFT(signal: np.ndarray, Fs: float, thr: float = 0) -> Tuple[n
 
     N = (len(signal) + 1) // 2
 
-    # Nuttall window
-    N_win = nuttall(N,4,3)
-    # N_win = np.ones((N))
-    N_win /= np.sum(N_win)    
+    
+    # Select window function
+    if window == "nuttall4_0":
+        win = nuttall(N, numTerms=4, Order=0)
+    elif window == "nuttall4_1":
+        win = nuttall(N, numTerms=4, Order=1)
+    elif window == "nuttall4_3":
+        win = nuttall(N, numTerms=4, Order=3)
+    elif window == "nuttall4_5":
+        win = nuttall(N, numTerms=4, Order=5)
+    elif window == "nuttall3_0":
+        win = nuttall(N, numTerms=3, Order=0)
+    elif window == "nuttall3_1":
+        win = nuttall(N, numTerms=3, Order=1)
+    elif window == "nuttall3_3":
+        win = nuttall(N, numTerms=3, Order=3)
+    else:
+        win = get_window(window, N)
+
+    win /= np.sum(win) # Ensures that the sum of the window is 1
 
     # Single windowing of last N samples for FFT
-    x_win = signal[-N:] * N_win
+    x_win = signal[-N:] * win
     S_FFT = fft(x_win)
 
     # Convolution of windows (double windowing)
-    N_win_conv = np.convolve(N_win, N_win)
-    N_win_conv /= np.sum(N_win_conv)  # Ensures that the sum of the window is 1
+    win_conv = np.convolve(win, win)
+    win_conv /= np.sum(win_conv)  # Ensures that the sum of the window is 1
 
     # Double-windowing of last 2N-1 samples for apFFT
-    x_conv = signal * N_win_conv
+    x_conv = signal * win_conv
     S = np.concatenate(([x_conv[N-1]], x_conv[:N-1] + x_conv[N:]))
 
     S_apFFT = fft(S)
@@ -98,7 +117,7 @@ if __name__=="__main__":
         x += A[k] * np.cos(2 * np.pi * f[k] * t + ph[k])
 
     # Apply Nuttall_2win_apFFT
-    (f_apFFT, y_apFFT) = Nuttall_2win_apFFT(x, Fs,0.01)
+    (f_apFFT, y_apFFT) = corrected_2Win_apFFT(x, Fs, window= "nuttall4_3", thr = 0.01)
 
     plt.figure(figsize=(10, 6))
     ax1 = plt.subplot(2, 1, 1)

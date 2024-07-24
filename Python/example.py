@@ -1,7 +1,7 @@
 # Import necessary libraries
 import numpy as np
 import matplotlib.pyplot as plt
-from corrected_apFFT import Nuttall_2win_apFFT
+from corrected_apFFT import corrected_2Win_apFFT
 
 # Generate a test signal
 Fs = 1024  # Sampling frequency
@@ -21,7 +21,7 @@ for k in range(len(f)):
     x += A[k] * np.cos(2 * np.pi * f[k] * t + ph[k])
 
 # Apply Nuttall_2win_apFFT
-(f_apFFT, y_apFFT) = Nuttall_2win_apFFT(x, Fs, thr=0.001)
+(f_apFFT, y_apFFT) = corrected_2Win_apFFT(x, Fs, window= "nuttall4_3", thr = 0.01)
 
 # Plotting the result
 plt.figure(figsize=(10, 6))

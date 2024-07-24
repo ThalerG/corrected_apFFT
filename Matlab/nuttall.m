@@ -36,11 +36,11 @@ function [w] = nuttall(N, varargin)
     %   A.H. Nuttall: ‘Some windows with very good sidelobe behaviour’, IEEE Trans. on
     %   Acoustics, Speech and Signal Processing, Vol ASSP-29 (1): 84–91 (1981).
     %
+    %   Heinzel G. et al., “Spectrum and spectral density estimation by the Discrete Fourier
+    %   transform (DFT), including a comprehensive list of window functions and some new 
+    %   flat-top windows”, February 15, 2002 https://holometer.fnal.gov/GH_FFT.pdf
     %
-    % Heinzel G. et al., “Spectrum and spectral density estimation by the Discrete Fourier
-    % transform (DFT), including a comprehensive list of window functions and some new 
-    % flat-top windows”, February 15, 2002 https://holometer.fnal.gov/GH_FFT.pdf
-    % See also: hamming, hanning, blackman
+    %   See also: hamming, hanning, blackman
 
     % Create an input parser
     p = inputParser;

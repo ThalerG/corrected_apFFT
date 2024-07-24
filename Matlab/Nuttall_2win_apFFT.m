@@ -24,7 +24,7 @@ if nargin < 3
 end
 
 if mod(length(signal),2)==0
-    warning('Signal cannot be of even length. Considering samples 1:(end-1)');
+    warning('Signal for double-windowed apFFT cannot be of even length. Last sample removed.');
     signal = signal(1:end-1);
 end
 

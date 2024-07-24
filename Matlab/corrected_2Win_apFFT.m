@@ -17,6 +17,10 @@ function [f_correct,y_correct] = corrected_2Win_apFFT(signal, Fs, varargin)
 %       f_correct - The corrected frequencies of the peaks.
 %       y_correct - The corrected amplitudes and phases of the peaks.
 %
+%   Reference:
+%       T. Su, M. Yang, T. Jin, and R. C. C. Flesch., "Power harmonic and interharmonic detection method in
+%       renewable power based on Nuttall double-window all-phase FFT algorithm", IET Renewable Power 
+%       Generation, 12(8), pp 953-961, 2018. https://doi.org/10.1049/iet-rpg.2017.0115
 %
 %   Example usage:
 %       [f_correct, y_correct] = corrected_2Win_apFFT(signal, Fs, 'window', window, 'thr', thr);

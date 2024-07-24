@@ -1,6 +1,6 @@
-# Advanced Phase FFT Analysis with Nuttall Windowing
+# Corrected frequency analysis with double-window all-phase FFT
 
-This repository contains MATLAB and Python implementations for correcting peak location in frequency domain using all phase Fast Fourier Transform (FFT) and double windowing. The primary focus is on minimizing phase errors and aligning all components in phase for a given signal.
+This repository contains MATLAB and Python implementations for correcting peak location in frequency domain using all-phase Fast Fourier Transform (apFFT) and double-window. The primary focus is on minimizing phase errors and correcting fence effect and spectral leakage distortion.
 
 This repository is based on the following research paper:
 
@@ -12,12 +12,12 @@ The repository is organized into several directories, each containing relevant f
 
 ### Directory Structure
 
-- `Matlab/`: Contains MATLAB scripts and functions for the double windowed apFFT analysis and nth order Nuttall window.
-  - [`corrected_2Win_apFFT.m`](Matlab/corrected_2Win_apFFT.m): Main function for performing the corrected double-window all Phase FFT transformation.
+- `Matlab/`: Contains MATLAB scripts and functions for the double-window apFFT analysis and nth order Nuttall window.
+  - [`corrected_2Win_apFFT.m`](Matlab/corrected_2Win_apFFT.m): Main function for performing the corrected double-window all-phase FFT transformation.
   - [`nuttall.m`](Matlab/nuttall.m): Function for generating nth order Nuttall window.
   - [`example.m`](Matlab/example.m): Example script demonstrating the use of `corrected_2Win_apFFT` in Matlab using Nuttall window.
 - `Python/`: Contains Python scripts for a similar analysis using NumPy and Matplotlib.
-  - [`corrected_apFFT.py`](Python/corrected_apFFT.py): Python implementation of the corrected double windowed apFFT.
+  - [`corrected_apFFT.py`](Python/corrected_apFFT.py): Python implementation of the corrected double-window apFFT.
   - [`windows.py`](Python/windows.py): Function for generating nth order Nuttall window.
   - [`example.py`](Python/example.py): Example script demonstrating the use of `corrected_2Win_apFFT` in Python using Nuttall window.
 
